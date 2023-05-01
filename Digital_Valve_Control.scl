@@ -1,0 +1,89 @@
+FUNCTION_BLOCK ValveController
+TITLE = 'Valve Controller Function Chart'
+
+// Define inputs
+VAR_INPUT
+    AutoMode : BOOL;        // Automatic mode switch
+    ManualMode : BOOL;      // Manual mode switch
+    OpenCmd : BOOL;         // Valve open pulse command
+    CloseCmd : BOOL;        // Valve close pulse command
+    Interlock : BOOL;       // Interlock input
+END_VAR
+
+// Define outputs
+VAR_OUTPUT
+    ValveOpen : BOOL;       // Valve open pulse output
+    ValveClose : BOOL;      // Valve close pulse output
+    ValveStatus : BOOL;     // Valve status output (true if open, false if closed)
+    InterlockStatus : BOOL; // Interlock status output (true if interlocked)
+    ValveInManual : BOOL;    // Manual mode status output (true if active)
+    ValveInAuto : BOOL;      // Automatic mode status output (true if active)
+END_VAR
+
+// Main program
+BEGIN
+    // Automatic mode
+    IF AutoMode THEN
+        IF Interlock THEN   // Stop operation if interlocked
+            ValveOpen := FALSE;
+            ValveClose := FALSE;
+            ValveStatus := FALSE;
+            InterlockStatus := TRUE;
+            ValveInAuto := TRUE;
+            ValveInManual := FALSE;
+        ELSIF OpenCmd THEN  // Valve open pulse command
+            ValveOpen := TRUE;
+            ValveClose := FALSE;
+            ValveStatus := TRUE;
+            InterlockStatus := FALSE;
+            ValveInAuto := TRUE;
+            ValveInManual := FALSE;
+        ELSIF CloseCmd THEN  // Valve close pulse command
+            ValveOpen := FALSE;
+            ValveClose := TRUE;
+            ValveStatus := FALSE;
+            InterlockStatus := FALSE;
+            ValveInAuto := TRUE;
+            ValveInManual := FALSE;
+        ELSE    // Stop valve movement
+            ValveOpen := FALSE;
+            ValveClose := FALSE;
+            ValveStatus := ValveStatus;    // No change in valve status
+            InterlockStatus := FALSE;
+            ValveInAuto := TRUE;
+            ValveInManual := FALSE;
+        END_IF;
+    // Manual mode
+    ELSIF ManualMode THEN
+        IF OpenCmd THEN     // Valve open pulse command
+            ValveOpen := TRUE;
+            ValveClose := FALSE;
+            ValveStatus := TRUE;
+            InterlockStatus := FALSE;
+            ValveInAuto := FALSE;
+            ValveInManual := TRUE;
+        ELSIF CloseCmd THEN  // Valve close pulse command
+            ValveOpen := FALSE;
+            ValveClose := TRUE;
+            ValveStatus := FALSE;
+            InterlockStatus := FALSE;
+            ValveInAuto := FALSE;
+            ValveInManual := TRUE;
+        ELSE    // Stop valve movement
+            ValveOpen := FALSE;
+            ValveClose := FALSE;
+            ValveStatus := ValveStatus;    // No change in valve status
+            InterlockStatus := FALSE;
+            ValveInAuto := FALSE;
+            ValveInManual := TRUE;
+        END_IF;
+    // Stop valve movement if both automatic and manual modes are off
+    ELSE
+        ValveOpen := FALSE;
+        ValveClose := FALSE;
+        ValveStatus := ValveStatus;    // No change in valve status
+        InterlockStatus := FALSE;
+        ValveInAuto := FALSE;
+        ValveInManual := FALSE;
+    END_IF;
+END_FUNCTION_BLOCK

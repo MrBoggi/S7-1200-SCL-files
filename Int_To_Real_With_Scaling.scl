@@ -1,0 +1,38 @@
+FUNCTION_BLOCK Int_To_Real_With_Scaling
+TITLE = 'Int_To_Real_With_Scaling - Converts an integer to a real and scales it'
+
+VAR_INPUT
+    int_value : INT; // Integer input signal
+    scale : REAL; // Scaling factor
+END_VAR
+
+VAR_OUTPUT
+    real_value : REAL; // Scaled real output signal
+END_VAR
+
+VAR
+    temp_value : REAL; // Temporary real variable for scaling
+END_VAR
+
+// DESCRIPTION:
+// This function block converts an integer input signal to a real and scales it
+// based on a scaling factor input.
+
+// USAGE:
+// - int_value: Integer input signal
+// - scale: Scaling factor
+// - real_value: Scaled real output signal
+
+// DESCRIPTIONS:
+// - int_value: Integer input signal to be converted and scaled
+// - scale: Scaling factor
+// - real_value: Scaled real output signal
+// - temp_value: Temporary real variable for scaling
+
+BEGIN
+    // Convert the integer input signal to a real
+    temp_value := INT_TO_REAL(int_value);
+    
+    // Scale the real value based on the scaling factor
+    real_value := temp_value * scale;
+END_FUNCTION_BLOCK

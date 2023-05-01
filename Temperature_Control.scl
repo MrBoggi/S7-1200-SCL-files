@@ -1,0 +1,78 @@
+FUNCTION_BLOCK Temperature_Control
+TITLE = 'Function block for controlling the temperature of a vessel'
+
+// Inputs
+VAR_INPUT
+    man_auto : BOOL;     // 0=Manual, 1=Automatic
+    temp_sp : REAL;      // Setpoint temperature in degrees Celsius
+    temp_pv : REAL;      // Process variable temperature in degrees Celsius
+END_VAR
+
+// Outputs
+VAR_OUTPUT
+    out_analog : REAL;   // Output for standard Siemens analog out
+    out_hmi : REAL;      // Output for HMI display (0-100%)
+END_VAR
+
+// Parameters
+VAR
+    kp : REAL := 10.0;   // Proportional gain
+    ts : REAL := 1.0;    // Sampling time in seconds
+    ki : REAL := 0.2;    // Integral gain
+    kd : REAL := 0.5;    // Derivative gain
+END_VAR
+
+// Internal variables
+VAR
+    err : REAL;          // Error between setpoint and process variable
+    err_sum : REAL := 0.0; // Sum of errors for integral control
+    err_last : REAL := 0.0;// Error from previous sample for derivative control
+    pid_out : REAL;      // PID control output
+    man_out : REAL;      // Manual control output
+    i_term : REAL;       // Integral term
+    d_term : REAL;       // Derivative term
+    out_temp : REAL;     // Intermediate output value
+END_VAR
+
+// Main logic
+BEGIN
+    // Calculate error
+    err := temp_sp - temp_pv;
+
+    IF man_auto THEN
+        // Automatic mode
+
+        // Calculate integral term
+        err_sum := err_sum + (err * ts);
+        i_term := ki * err_sum;
+
+        // Calculate derivative term
+        d_term := kd * ((err - err_last) / ts);
+        err_last := err;
+
+        // Calculate PID control output
+        pid_out := kp * err + i_term + d_term;
+
+        // Clamp output to valid range
+        IF pid_out > 100.0 THEN
+            pid_out := 100.0;
+        END_IF;
+
+        IF pid_out < 0.0 THEN
+            pid_out := 0.0;
+        END_IF;
+
+        // Scale output for standard Siemens analog out (4-20 mA)
+        out_temp := ((pid_out / 100.0) * 16.0) + 4.0;
+        out_analog := out_temp;
+
+        // Scale output for HMI display (0-100%)
+        out_hmi := pid_out;
+
+    ELSE
+        // Manual mode
+        man_out := temp_sp;
+        out_analog := man_out;
+        out_hmi := (man_out / 100.0) * 4095.0;
+    END_IF;
+END_FUNCTION_BLOCK

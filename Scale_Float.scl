@@ -1,0 +1,62 @@
+FUNCTION_BLOCK Scale_Float
+TITLE = 'Scale_Float - Scales a floating-point input signal linearly'
+
+VAR_INPUT
+    value : REAL; // Raw input signal
+    scale_to_min : REAL; // Minimum value of scaled range
+    scale_to_max : REAL; // Maximum value of scaled range
+    scale_from_min : REAL; // Minimum value of raw input range
+    scale_from_max : REAL; // Maximum value of raw input range
+END_VAR
+
+VAR_OUTPUT
+    scaled_value : REAL; // Scaled output signal
+END_VAR
+
+VAR
+    scaled_range : REAL; // Range of scaled output range
+    unscaled_range : REAL; // Range of raw input range
+    scale_factor : REAL; // Scaling factor between input and output ranges
+END_VAR
+
+// DESCRIPTION:
+// This function block scales a floating-point input signal linearly between
+// a minimum and maximum value of a scaled range, based on a minimum and maximum
+// value of a raw input range.
+
+// USAGE:
+// - value: Raw input signal
+// - scale_to_min: Minimum value of scaled range
+// - scale_to_max: Maximum value of scaled range
+// - scale_from_min: Minimum value of raw input range
+// - scale_from_max: Maximum value of raw input range
+// - scaled_value: Scaled output signal
+
+// DESCRIPTIONS:
+// - value: Raw input signal to be scaled
+// - scale_to_min: Minimum value of the scaled output range
+// - scale_to_max: Maximum value of the scaled output range
+// - scale_from_min: Minimum value of the raw input range
+// - scale_from_max: Maximum value of the raw input range
+// - scaled_value: Scaled output signal
+// - scaled_range: Range of the scaled output range
+// - unscaled_range: Range of the raw input range
+// - scale_factor: Scaling factor between input and output ranges
+
+BEGIN
+    // Calculate the range of the scaled output range
+    scaled_range := scale_to_max - scale_to_min;
+    
+    // Calculate the range of the raw input range
+    unscaled_range := scale_from_max - scale_from_min;
+    
+    // Calculate the scaling factor between the input and output ranges
+    IF unscaled_range <> 0 THEN
+        scale_factor := scaled_range / unscaled_range;
+    ELSE
+        scale_factor := 0;
+    END_IF;
+    
+    // Scale the input signal to the output signal
+    scaled_value := ((value - scale_from_min) * scale_factor) + scale_to_min;
+END_FUNCTION_BLOCK
